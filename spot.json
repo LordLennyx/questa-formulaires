@@ -1,0 +1,24 @@
+{
+ "titre": "<em>Questa</em>, formulaires sans code",
+ "type": "Créateur de formulaires · no-code",
+ "sous_titre": "Glisser-déposer, logique conditionnelle, réponses, statistiques, export CSV",
+ "couleur": "#5b3df5",
+ "graine": 28,
+ "voix": [
+  [3.3, "Questa, un créateur de formulaires sans une ligne de code,"],
+  [8.0, "on ajoute ses questions, on règle la logique, et le formulaire s'adapte aux réponses,"],
+  [16.4, "les résultats arrivent en direct, avec les statistiques et l'export CSV."]
+ ],
+ "etapes": [
+  {"t": "wait", "ms": 900},
+  {"t": "click", "sel": "[data-add=tel]", "pause": 1000},
+  {"t": "click", "sel": ".fld[data-id='3']", "pause": 1400},
+  {"t": "click", "sel": ".tabs button[data-v=prev]", "pause": 800},
+  {"t": "click", "sel": ".stars[data-n='1'] button[data-v='3']", "pause": 1200},
+  {"t": "type", "sel": "[name=q3]", "text": "Un peu d'attente avant le soin.", "delay": 22, "pause": 300},
+  {"t": "click", "sel": "label.opt:has([value='Tresses'])", "pause": 400},
+  {"t": "click", "sel": ".nps[data-n='5'] button[data-v='9']", "pause": 500},
+  {"t": "click", "sel": "#pf > button", "pause": 1300},
+  {"t": "click", "sel": ".tabs button[data-v=resp]", "pause": 2600}
+ ]
+}

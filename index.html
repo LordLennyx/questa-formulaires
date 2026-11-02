@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Questa — créateur de formulaires sans code</title>
+<meta name="description" content="Questa, créateur de formulaires et de questionnaires sans code : glisser-déposer, logique conditionnelle, aperçu en direct, réponses, statistiques et export CSV.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%235b3df5'/%3E%3Ccircle cx='15' cy='15' r='7' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Cpath d='M19 19l5 5' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#f4f2fb;--paper:#fff;--ink:#1b1830;--mute:#6f6a86;--line:#e4e0f2;--acc:#5b3df5;--acc-l:#ece8ff;--ok:#1f8a5b}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.45 'Instrument Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}button{cursor:pointer}
+.serif{font-family:'Instrument Serif',serif;font-weight:400}
+header{display:flex;align-items:center;gap:16px;padding:12px 20px;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px}
+.logo i{width:28px;height:28px;border-radius:8px;background:var(--acc);display:grid;place-items:center}
+.tabs{display:flex;gap:2px;background:var(--bg);border-radius:10px;padding:3px;margin:0 auto}
+.tabs button{border:0;background:none;border-radius:8px;padding:7px 16px;font-weight:600;color:var(--mute)}
+.tabs button.on{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(27,24,48,.12)}
+.tabs b{background:var(--acc);color:#fff;border-radius:10px;font-size:11px;padding:0 6px;margin-left:4px}
+.btn{border:1px solid var(--line);background:var(--paper);border-radius:9px;padding:8px 14px;font-weight:600}
+.btn.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.view{display:none}.view.on{display:grid}
+/* constructeur */
+#v-build{grid-template-columns:230px 1fr 300px;min-height:calc(100vh - 57px)}
+.pal{background:var(--paper);border-right:1px solid var(--line);padding:16px;overflow-y:auto}
+.pal h4,.ins h4{font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--mute);margin:4px 0 10px}
+.pal button{display:flex;align-items:center;gap:10px;width:100%;border:1px solid transparent;background:none;border-radius:9px;padding:8px 9px;font-weight:500;text-align:left}
+.pal button:hover{background:var(--bg);border-color:var(--line)}
+.pal svg{width:28px;height:28px;flex:none;padding:6px;border-radius:7px;background:var(--acc-l);color:var(--acc)}
+.canvas{padding:28px;overflow-y:auto}
+.sheet{max-width:640px;margin:auto}
+.fh{background:var(--paper);border-radius:16px;padding:24px 26px;margin-bottom:12px;border-top:6px solid var(--acc)}
+.fh input{border:0;width:100%;font:400 36px/1.1 'Instrument Serif';background:none;outline:0}
+.fh textarea{border:0;width:100%;resize:none;color:var(--mute);background:none;outline:0;margin-top:6px}
+.fld{background:var(--paper);border:2px solid transparent;border-radius:14px;padding:16px 18px;margin-bottom:10px;position:relative;cursor:pointer;transition:border-color .15s}
+.fld:hover{border-color:var(--line)}
+.fld.sel{border-color:var(--acc)}
+.fld.drag{opacity:.4}
+.fld.over{box-shadow:0 -3px 0 var(--acc)}
+.fld.new{animation:pop .45s}
+@keyframes pop{from{transform:translateY(10px);opacity:0}}
+.fld .q{font-weight:600;font-size:15px;display:flex;gap:6px;align-items:baseline}
+.fld .q em{color:#d23b2a;font-style:normal}
+.fld .lg{font-size:11.5px;color:var(--acc);background:var(--acc-l);border-radius:5px;padding:1px 7px;margin-left:auto;font-weight:600;white-space:nowrap}
+.fld .gr{position:absolute;left:-26px;top:16px;color:var(--mute);cursor:grab;opacity:0;font-size:16px}
+.fld:hover .gr{opacity:1}
+.mock{margin-top:10px;pointer-events:none}
+.mock .in{border:1px solid var(--line);border-radius:9px;padding:9px 11px;color:#aaa6bd;background:#fbfaff}
+.opt{display:flex;align-items:center;gap:8px;padding:4px 0;color:#4a4560}
+.opt i{width:16px;height:16px;border:1.5px solid #c9c3e0;border-radius:50%;flex:none}
+.opt i.sq{border-radius:4px}
+.stars{color:#d6d0ea;font-size:24px;letter-spacing:3px}
+.nps{display:flex;gap:4px}.nps span{flex:1;border:1px solid var(--line);border-radius:6px;text-align:center;padding:5px 0;font-size:12px}
+.emp{border:2px dashed var(--line);border-radius:14px;padding:30px;text-align:center;color:var(--mute)}
+.ins{background:var(--paper);border-left:1px solid var(--line);padding:16px;overflow-y:auto}
+label.f{display:grid;gap:4px;font-size:12px;color:var(--mute);margin-bottom:12px}
+.f input,.f select,.f textarea{border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);background:#fff;font-size:13.5px}
+.tg{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-weight:500}
+.sw{width:38px;height:22px;border-radius:20px;background:#d8d3ea;border:0;position:relative;transition:.2s}
+.sw::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on{background:var(--acc)}.sw.on::after{left:19px}
+.ol{display:flex;gap:6px;margin-bottom:6px}.ol input{flex:1;border:1px solid var(--line);border-radius:7px;padding:6px 9px}
+.ol button{border:0;background:none;color:var(--mute);font-size:17px}
+.logic{background:var(--acc-l);border-radius:10px;padding:10px;margin-top:6px}
+.logic select{width:100%;margin-top:5px}
+.mini{display:flex;gap:6px;margin-top:14px}.mini .btn{flex:1;padding:7px;font-size:12.5px}
+/* aperçu */
+#v-prev{place-items:start center;padding:30px 16px;background:linear-gradient(160deg,#ece8ff,#f4f2fb 40%)}
+.form{width:min(620px,100%)}
+.form .fld{cursor:default;transition:opacity .3s,transform .3s}
+.form .fld.hide{display:none}
+.form .fld.show{animation:pop .4s}
+.form input[type=text],.form input[type=email],.form input[type=tel],.form input[type=date],.form textarea,.form select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;margin-top:10px;background:#fff;font-size:14.5px}
+.form input:focus,.form textarea:focus,.form select:focus{outline:0;border-color:var(--acc)}
+.form .opt{cursor:pointer;padding:7px 10px;border:1.5px solid var(--line);border-radius:10px;margin-top:7px}
+.form .opt:has(input:checked){border-color:var(--acc);background:var(--acc-l)}
+.form .opt input{accent-color:var(--acc);width:16px;height:16px}
+.form .stars button{border:0;background:none;font-size:30px;color:#d6d0ea;padding:0 2px}
+.form .stars button.on{color:#f2b01e}
+.form .nps button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:8px 0;font-weight:600}
+.form .nps button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.err{color:#d23b2a;font-size:12.5px;margin-top:6px;display:none}
+.fld.bad{border-color:#f0b4ab}.fld.bad .err{display:block}
+.prog{height:5px;background:#ddd7f3;border-radius:3px;margin-bottom:14px;overflow:hidden}.prog u{display:block;height:100%;background:var(--acc);transition:width .3s}
+.thx{background:#fff;border-radius:18px;padding:50px 30px;text-align:center}
+.thx .c{width:70px;height:70px;border-radius:50%;background:var(--ok);display:grid;place-items:center;margin:0 auto 14px;animation:pop .5s}
+/* réponses */
+#v-resp{padding:24px;display:none;max-width:1200px;margin:auto}
+#v-resp.on{display:block}
+.kp{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.kp div{background:var(--paper);border-radius:14px;padding:16px}
+.kp span{color:var(--mute);font-size:12.5px}.kp b{display:block;font:400 34px 'Instrument Serif'}
+.sums{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px}
+.sum{background:var(--paper);border-radius:14px;padding:16px}
+.sum h3{font-size:14.5px;margin-bottom:10px}
+.br{display:grid;grid-template-columns:120px 1fr 54px;gap:10px;align-items:center;margin-bottom:7px;font-size:13px}
+.br i{height:12px;border-radius:0 4px 4px 0;background:var(--acc);display:block;transition:width .5s}
+.br span:last-child{text-align:right;color:var(--mute);font-variant-numeric:tabular-nums}
+.tbl{background:var(--paper);border-radius:14px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--mute);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid #f2f0f9;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr.nw td{background:#f0fbf4}
+.share{background:var(--paper);border-radius:14px;padding:16px;margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.share code{display:block;background:var(--bg);border-radius:8px;padding:10px;font-size:12px;word-break:break-all;margin-top:6px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;opacity:0;transition:.3s;z-index:50;font-weight:600}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (max-width:1000px){#v-build{grid-template-columns:1fr}.pal{display:flex;gap:6px;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.pal h4{display:none}.pal button{white-space:nowrap;width:auto;border-color:var(--line)}.ins{border-left:0;border-top:1px solid var(--line)}.canvas{padding:16px}.fld .gr{display:none}.kp,.sums,.share{grid-template-columns:1fr 1fr}.sums,.share{grid-template-columns:1fr}header{flex-wrap:wrap;gap:8px}.tabs{order:3;margin:0;width:100%}.tabs button{flex:1;padding:7px 6px}.logo{margin-right:auto}}
+</style>
+</head>
+<body>
+<header><div class="logo"><i><svg width="16" height="16" viewBox="0 0 16 16"><circle cx="7.5" cy="7.5" r="4.5" fill="none" stroke="#fff" stroke-width="2"/><path d="M10.5 10.5l3 3" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></i>Questa</div>
+<div class="tabs"><button class="on" data-v="build">Créer</button><button data-v="prev">Aperçu</button><button data-v="resp">Réponses <b id="nR">0</b></button></div>
+<button class="btn p" id="pub">Publier</button></header>
+
+<section class="view on" id="v-build">
+ <aside class="pal" id="pal"></aside>
+ <div class="canvas"><div class="sheet"><div class="fh"><input id="ft"><textarea id="fd" rows="2"></textarea></div><div id="flds"></div></div></div>
+ <aside class="ins" id="ins"></aside>
+</section>
+<section class="view" id="v-prev"><div class="form" id="form"></div></section>
+<section class="view" id="v-resp">
+ <div class="kp"><div><span>Réponses</span><b id="s1"></b></div><div><span>Taux de complétion</span><b id="s2"></b></div><div><span>Temps moyen</span><b>1 min 48</b></div><div><span>Note moyenne</span><b id="s4"></b></div></div>
+ <div class="sums" id="sums"></div>
+ <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 10px"><b style="font-size:16px">Toutes les réponses</b><button class="btn" id="csv">Exporter en CSV</button></div>
+ <div class="tbl"><table id="tbl"></table></div>
+ <div class="share"><div><b>Lien de partage</b><code>https://questa.app/f/atelier-kor-satisfaction</code></div><div><b>Intégrer sur votre site</b><code>&lt;iframe src="https://questa.app/e/atelier-kor-satisfaction" width="100%" height="640"&gt;&lt;/iframe&gt;</code></div></div>
+</section>
+<div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const IC={text:'<path d="M4 7h16M4 12h10M4 17h7"/>',para:'<path d="M4 6h16M4 10h16M4 14h16M4 18h9"/>',email:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',tel:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
+ radio:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/>',check:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8 12 3 3 5-6"/>',select:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="m14 11 2 2 2-2"/>',
+ rating:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',nps:'<path d="M4 18V12M9 18V8M14 18v-5M19 18V5"/>',date:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'};
+const TY={text:'Texte court',para:'Paragraphe',email:'E-mail',tel:'Téléphone',radio:'Choix unique',check:'Cases à cocher',select:'Liste déroulante',rating:'Note sur 5',nps:'Recommandation 0-10',date:'Date'};
+const hasOpt=t=>['radio','check','select'].includes(t);
+let uid=10;
+let FM={t:'Votre avis sur Atelier Kôr',d:'Deux minutes pour nous aider à mieux vous recevoir. Merci !',f:[
+ {id:1,t:'rating',q:'Comment évaluez-vous votre dernière visite ?',r:true},
+ {id:2,t:'radio',q:'Quelle prestation avez-vous choisie ?',r:true,o:['Tresses','Nattes collées','Coupe homme','Soin du cuir chevelu']},
+ {id:3,t:'para',q:"Qu'est-ce qui vous a déçu·e ?",r:false,c:{f:1,op:'<=',v:'3'}},
+ {id:4,t:'check',q:'Comment nous avez-vous connus ?',r:false,o:['Instagram','Bouche-à-oreille','Google','WhatsApp']},
+ {id:5,t:'nps',q:'Recommanderiez-vous Atelier Kôr à un proche ?',r:true},
+ {id:6,t:'email',q:'Votre e-mail, pour recevoir -10 % sur la prochaine visite',r:false}]};
+let sel=1;
+const R=[];(()=>{let r=28;const rnd=()=>(r=(r*9301+49297)%233280)/233280;const N=['Aïcha','Brice','Carine','Diane','Estelle','Fabrice','Grâce','Hervé','Inès','Joëlle','Kevin','Linda','Mireille','Nadège','Olivier','Prisca','Rosine','Sandra'];
+ N.forEach((n,i)=>{const st=rnd()<.15?2+Math.floor(rnd()*2):4+Math.floor(rnd()*2);R.push({1:st,2:FM.f[1].o[Math.floor(rnd()*4)],3:st<=3?['Attente trop longue','Prix un peu élevé','Rendez-vous décalé'][i%3]:'',4:FM.f[3].o.filter(()=>rnd()<.4),5:st>=4?7+Math.floor(rnd()*4):3+Math.floor(rnd()*5),6:rnd()<.5?n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')+'@mail.cm':'',ts:Date.now()-(18-i)*36e5*7})})})();
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('on'),2400)}
+$('#pal').innerHTML='<h4>Ajouter un champ</h4>'+Object.entries(TY).map(([k,n])=>`<button data-add="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</svg>${n}</button>`).join('');
+$('#pal').onclick=e=>{const b=e.target.closest('[data-add]');if(b)add(b.dataset.add)};
+function add(t){const f={id:++uid,t,q:{text:'Votre nom',para:'Votre message',email:'Votre e-mail',tel:'Votre numéro WhatsApp',radio:'Une question à choix',check:'Plusieurs réponses possibles',select:'Choisissez dans la liste',rating:'Votre note',nps:'Recommanderiez-vous ?',date:'Date souhaitée'}[t],r:false};if(hasOpt(t))f.o=['Option 1','Option 2','Option 3'];
+ const i=FM.f.findIndex(x=>x.id===sel);FM.f.splice(i<0?FM.f.length:i+1,0,f);sel=f.id;build(f.id);ins();setTimeout(()=>{const el=$(`.fld[data-id="${f.id}"]`);el&&el.scrollIntoView({block:'center',behavior:'smooth'})},50)}
+window.__ajoute=add;
+function mock(f){if(f.t==='para')return '<div class="in" style="height:60px">Réponse longue…</div>';if(hasOpt(f.t)){if(f.t==='select')return '<div class="in">Sélectionner ▾</div>';return f.o.map(o=>`<div class="opt"><i class="${f.t==='check'?'sq':''}"></i>${esc(o)}</div>`).join('')}
+ if(f.t==='rating')return '<div class="stars">★★★★★</div>';if(f.t==='nps')return `<div class="nps">${[...Array(11)].map((_,i)=>`<span>${i}</span>`).join('')}</div>`;return `<div class="in">${{text:'Réponse courte',email:'nom@exemple.com',tel:'6XX XX XX XX',date:'jj/mm/aaaa'}[f.t]}</div>`}
+const lab=c=>{if(!c)return'';const s=FM.f.find(x=>x.id===c.f);return s?`si « ${s.q.slice(0,22)}… » ${c.op} ${c.v}`:''};
+function build(nw){$('#ft').value=FM.t;$('#fd').value=FM.d;
+ $('#flds').innerHTML=FM.f.map((f,i)=>`<div class="fld ${f.id===sel?'sel':''} ${f.id===nw?'new':''}" data-id="${f.id}" draggable="true"><span class="gr">⠿</span><div class="q"><span style="color:var(--mute);font-weight:500">${i+1}.</span>${esc(f.q)}${f.r?'<em>*</em>':''}${f.c?`<span class="lg">Logique : ${esc(lab(f.c))}</span>`:''}</div><div class="mock">${mock(f)}</div></div>`).join('')||'<div class="emp">Ajoutez votre premier champ depuis la colonne de gauche.</div>'}
+$('#ft').oninput=e=>FM.t=e.target.value;$('#fd').oninput=e=>FM.d=e.target.value;
+$('#flds').onclick=e=>{const f=e.target.closest('.fld');if(f){sel=+f.dataset.id;$$('#flds .fld').forEach(x=>x.classList.toggle('sel',x===f));ins()}};
+let dg=null;
+$('#flds').addEventListener('dragstart',e=>{const f=e.target.closest('.fld');if(f){dg=+f.dataset.id;f.classList.add('drag')}});
+$('#flds').addEventListener('dragover',e=>{const f=e.target.closest('.fld');if(!f)return;e.preventDefault();$$('.fld.over').forEach(x=>x.classList.remove('over'));f.classList.add('over')});
+$('#flds').addEventListener('drop',e=>{const f=e.target.closest('.fld');if(!f||dg==null)return;e.preventDefault();const a=FM.f.findIndex(x=>x.id===dg),it=FM.f.splice(a,1)[0],b=FM.f.findIndex(x=>x.id===+f.dataset.id);FM.f.splice(b,0,it);dg=null;build();toast('Champ déplacé')});
+$('#flds').addEventListener('dragend',()=>{$$('.fld').forEach(x=>x.classList.remove('drag','over'))});
+function ins(){const f=FM.f.find(x=>x.id===sel);if(!f){$('#ins').innerHTML='<h4>Propriétés</h4><p style="color:var(--mute)">Sélectionnez un champ.</p>';return}const i=FM.f.indexOf(f),prev=FM.f.slice(0,i).filter(x=>['rating','nps','radio','select'].includes(x.t));
+ $('#ins').innerHTML=`<h4>${TY[f.t]}</h4><label class="f">Question<textarea id="iq" rows="2">${esc(f.q)}</textarea></label>
+ <div class="tg">Réponse obligatoire<button class="sw ${f.r?'on':''}" id="ir" aria-label="Obligatoire"></button></div>
+ ${hasOpt(f.t)?`<label class="f">Options</label><div id="io">${f.o.map((o,k)=>`<div class="ol"><input value="${esc(o)}" data-k="${k}"><button data-x="${k}">×</button></div>`).join('')}</div><button class="btn" id="ia" style="width:100%;margin-bottom:12px">+ Option</button>`:''}
+ <h4 style="margin-top:6px">Logique conditionnelle</h4><div class="logic">${prev.length?`<label class="f" style="margin:0">Afficher ce champ seulement si…<select id="lf"><option value="">Toujours afficher</option>${prev.map(p=>`<option value="${p.id}" ${f.c&&f.c.f===p.id?'selected':''}>${esc(p.q.slice(0,40))}</option>`).join('')}</select></label>
+ ${f.c?`<div style="display:grid;grid-template-columns:70px 1fr;gap:6px;margin-top:6px"><select id="lo" class="f" style="border:1px solid var(--line);border-radius:7px">${['=','<=','>='].map(o=>`<option ${f.c.op===o?'selected':''}>${o}</option>`).join('')}</select><input id="lv" value="${esc(f.c.v)}" style="border:1px solid var(--line);border-radius:7px;padding:6px 8px"></div>`:''}`:'<small style="color:var(--mute)">Ajoutez une question à choix ou une note avant ce champ pour créer une condition.</small>'}</div>
+ <div class="mini"><button class="btn" id="iu">↑</button><button class="btn" id="id">↓</button><button class="btn" id="idup">Dupliquer</button><button class="btn" id="idel" style="color:#d23b2a">Supprimer</button></div>`;
+ const re=()=>build();
+ $('#iq').oninput=e=>{f.q=e.target.value;re()};$('#ir').onclick=()=>{f.r=!f.r;$('#ir').classList.toggle('on',f.r);re()};
+ if($('#io')){$('#io').oninput=e=>{f.o[+e.target.dataset.k]=e.target.value;re()};$('#io').onclick=e=>{const b=e.target.closest('[data-x]');if(b&&f.o.length>1){f.o.splice(+b.dataset.x,1);re();ins()}};$('#ia').onclick=()=>{f.o.push('Option '+(f.o.length+1));re();ins()}}
+ if($('#lf'))$('#lf').onchange=e=>{f.c=e.target.value?{f:+e.target.value,op:'=',v:''}:null;re();ins()};
+ if($('#lo')){$('#lo').onchange=e=>{f.c.op=e.target.value;re()};$('#lv').oninput=e=>{f.c.v=e.target.value;re()}}
+ const mv=d=>{const j=i+d;if(j<0||j>=FM.f.length)return;FM.f.splice(i,1);FM.f.splice(j,0,f);re();ins()};$('#iu').onclick=()=>mv(-1);$('#id').onclick=()=>mv(1);
+ $('#idup').onclick=()=>{const c=JSON.parse(JSON.stringify(f));c.id=++uid;FM.f.splice(i+1,0,c);sel=c.id;build(c.id);ins()};
+ $('#idel').onclick=()=>{FM.f.splice(i,1);FM.f.forEach(x=>{if(x.c&&x.c.f===f.id)x.c=null});sel=(FM.f[i]||FM.f[i-1]||{}).id;build();ins()}}
+// aperçu
+let A={};
+function okC(f){if(!f.c)return true;const v=A[f.c.f];if(v==null||v==='')return false;const a=isNaN(v)?v:+v,b=isNaN(f.c.v)||f.c.v===''?f.c.v:+f.c.v;return f.c.op==='='?String(a)===String(b):f.c.op==='<='?a<=b:a>=b}
+function inp(f){const n='q'+f.id,v=A[f.id];
+ if(f.t==='para')return `<textarea name="${n}" rows="3">${esc(v||'')}</textarea>`;
+ if(f.t==='radio')return f.o.map(o=>`<label class="opt"><input type="radio" name="${n}" value="${esc(o)}" ${v===o?'checked':''}>${esc(o)}</label>`).join('');
+ if(f.t==='check')return f.o.map(o=>`<label class="opt"><input type="checkbox" name="${n}" value="${esc(o)}" ${(v||[]).includes(o)?'checked':''}>${esc(o)}</label>`).join('');
+ if(f.t==='select')return `<select name="${n}"><option value="">Sélectionner…</option>${f.o.map(o=>`<option ${v===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+ if(f.t==='rating')return `<div class="stars" data-n="${f.id}">${[1,2,3,4,5].map(k=>`<button type="button" data-v="${k}" class="${v>=k?'on':''}" aria-label="${k} étoiles">★</button>`).join('')}</div>`;
+ if(f.t==='nps')return `<div class="nps" data-n="${f.id}" style="margin-top:10px">${[...Array(11)].map((_,k)=>`<button type="button" data-v="${k}" class="${v===k?'on':''}">${k}</button>`).join('')}</div>`;
+ return `<input type="${{email:'email',tel:'tel',date:'date'}[f.t]||'text'}" name="${n}" value="${esc(v||'')}" placeholder="${{text:'Votre réponse',email:'nom@exemple.com',tel:'6XX XX XX XX'}[f.t]||''}">`}
+function prev(){A={};$('#form').innerHTML=`<div class="prog"><u id="pg" style="width:0"></u></div><div class="fh"><div class="serif" style="font-size:36px;line-height:1.1">${esc(FM.t)}</div><p style="color:var(--mute);margin-top:6px">${esc(FM.d)}</p></div><form id="pf" novalidate>${FM.f.map(f=>`<div class="fld ${okC(f)?'':'hide'}" data-id="${f.id}"><div class="q">${esc(f.q)}${f.r?'<em>*</em>':''}</div>${inp(f)}<div class="err">${f.t==='email'?'Adresse e-mail invalide':'Cette question est obligatoire'}</div></div>`).join('')}<button class="btn p" style="width:100%;padding:14px;font-size:15px;border-radius:12px">Envoyer mes réponses</button></form>`;
+ const vis=()=>{FM.f.forEach(f=>{const el=$(`#pf .fld[data-id="${f.id}"]`),s=okC(f);if(s&&el.classList.contains('hide')){el.classList.remove('hide');el.classList.add('show')}else if(!s)el.classList.add('hide')});
+  const V=FM.f.filter(okC),done=V.filter(f=>{const v=A[f.id];return v!=null&&v!==''&&!(Array.isArray(v)&&!v.length)}).length;$('#pg').style.width=(done/V.length*100)+'%'};
+ $('#pf').addEventListener('input',e=>{const n=e.target.name;if(!n)return;const id=+n.slice(1),f=FM.f.find(x=>x.id===id);A[id]=f.t==='check'?$$(`#pf [name="${n}"]:checked`).map(x=>x.value):e.target.value;e.target.closest('.fld').classList.remove('bad');vis()});
+ $('#pf').addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(!b)return;const w=b.parentElement,id=+w.dataset.n;A[id]=+b.dataset.v;[...w.children].forEach(x=>x.classList.toggle('on',FM.f.find(f=>f.id===id).t==='rating'?+x.dataset.v<=A[id]:+x.dataset.v===A[id]));w.closest('.fld').classList.remove('bad');vis()});
+ $('#pf').onsubmit=e=>{e.preventDefault();let bad=null;FM.f.filter(okC).forEach(f=>{const v=A[f.id],empty=v==null||v===''||(Array.isArray(v)&&!v.length),ko=(f.r&&empty)||(f.t==='email'&&v&&!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(v));$(`#pf .fld[data-id="${f.id}"]`).classList.toggle('bad',ko);if(ko&&!bad)bad=f.id});
+  if(bad){$(`#pf .fld[data-id="${bad}"]`).scrollIntoView({block:'center',behavior:'smooth'});return}
+  R.push({...A,ts:Date.now(),nw:true});$('#nR').textContent=R.length;$('#form').innerHTML=`<div class="thx"><div class="c"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></svg></div><div class="serif" style="font-size:34px">Merci !</div><p style="color:var(--mute);margin:8px 0 20px">Votre réponse a bien été enregistrée.</p><button class="btn" onclick="prev()">Répondre à nouveau</button> <button class="btn p" onclick="view('resp')">Voir les réponses</button></div>`};vis()}
+window.prev=prev;
+// réponses
+function resp(){$('#s1').textContent=R.length;$('#s2').textContent='94 %';const rt=R.map(r=>r[1]).filter(Boolean);$('#s4').textContent=rt.length?(rt.reduce((a,b)=>a+b,0)/rt.length).toFixed(1).replace('.',',')+' / 5':'—';
+ $('#sums').innerHTML=FM.f.filter(f=>['rating','radio','check','nps','select'].includes(f.t)).map(f=>{let C={};
+  if(f.t==='rating')[5,4,3,2,1].forEach(k=>C[k+' étoile'+(k>1?'s':'')]=R.filter(r=>r[f.id]===k).length);
+  else if(f.t==='nps'){C['Promoteurs (9-10)']=R.filter(r=>r[f.id]>=9).length;C['Passifs (7-8)']=R.filter(r=>r[f.id]>=7&&r[f.id]<=8).length;C['Détracteurs (0-6)']=R.filter(r=>r[f.id]!=null&&r[f.id]<=6).length}
+  else f.o.forEach(o=>C[o]=R.filter(r=>f.t==='check'?(r[f.id]||[]).includes(o):r[f.id]===o).length);
+  const mx=Math.max(...Object.values(C),1),tot=R.filter(r=>r[f.id]!=null&&r[f.id]!=='').length;
+  const nps=f.t==='nps'&&tot?Math.round((C['Promoteurs (9-10)']-C['Détracteurs (0-6)'])/tot*100):null;
+  return `<div class="sum"><h3>${esc(f.q)}${nps!=null?` <span style="float:right;color:var(--acc)">NPS ${nps>0?'+':''}${nps}</span>`:''}</h3>${Object.entries(C).map(([k,v])=>`<div class="br"><span>${esc(k)}</span><span><i style="width:${v/mx*100}%"></i></span><span>${v} · ${tot?Math.round(v/tot*100):0} %</span></div>`).join('')}</div>`}).join('');
+ $('#tbl').innerHTML=`<thead><tr><th>Date</th>${FM.f.map(f=>`<th>${esc(f.q.slice(0,26))}${f.q.length>26?'…':''}</th>`).join('')}</tr></thead><tbody>${[...R].reverse().map(r=>`<tr class="${r.nw?'nw':''}"><td>${new Date(r.ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}</td>${FM.f.map(f=>{const v=r[f.id];return `<td>${v==null||v===''?'<span style="color:#c9c3e0">—</span>':f.t==='rating'?'★'.repeat(v):esc(Array.isArray(v)?v.join(', '):v)}</td>`}).join('')}</tr>`).join('')}</tbody>`}
+$('#csv').onclick=()=>{const rows=[['Date',...FM.f.map(f=>f.q)],...R.map(r=>[new Date(r.ts).toISOString().slice(0,10),...FM.f.map(f=>{const v=r[f.id];return Array.isArray(v)?v.join(' | '):v??''})])];
+ const csv='﻿'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='questa-reponses.csv';a.click();toast('Fichier CSV téléchargé')};
+$('#pub').onclick=()=>toast('Formulaire publié : questa.app/f/atelier-kor-satisfaction');
+function view(v){$$('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));if(v==='prev')prev();if(v==='resp')resp();if(v==='build'){build();ins()}scrollTo(0,0)}
+window.view=view;$$('.tabs button').forEach(b=>b.onclick=()=>view(b.dataset.v));
+$('#nR').textContent=R.length;build();ins();
+</script>
+</body>
+</html>
